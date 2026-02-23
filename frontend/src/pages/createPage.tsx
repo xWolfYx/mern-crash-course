@@ -1,4 +1,6 @@
 import { useColorModeValue } from "@/components/ui/color-mode";
+import { Toaster, toaster } from "@/components/ui/toaster";
+import { useProductStore } from "@/store/product";
 import {
   Box,
   Button,
@@ -23,8 +25,26 @@ export default function CreatePage() {
     }));
   }
 
-  function handleAddProduct() {
-    console.log({ name, price, image });
+  const { createProduct } = useProductStore();
+
+  async function handleAddProduct() {
+    const { success, message } = await createProduct({ name, price, image });
+    console.log(success, message);
+
+    if (success) {
+      toaster.create({
+        description: message,
+        type: "success",
+        closable: true,
+      });
+      setNewProduct({ name: "", price: "", image: "" });
+    } else {
+      toaster.create({
+        description: message,
+        type: "error",
+        closable: true,
+      });
+    }
   }
 
   return (
@@ -65,6 +85,7 @@ export default function CreatePage() {
           </VStack>
         </Box>
       </VStack>
+      <Toaster />
     </Container>
   );
 }
