@@ -17,18 +17,23 @@ import { useColorModeValue } from "./color-mode";
 import { useProductStore } from "@/store/product";
 import { useState } from "react";
 
-export default function ProductCard({
-  product,
-}: {
-  name: string;
-  price: number;
-  image: string;
-}) {
+import type { Product } from "@/store/product.ts";
+
+interface ProductCardProps {
+  product: Product;
+}
+
+export default function ProductCard({ product }: ProductCardProps) {
+  const { name, price, image, _id } = product;
   const textColor = useColorModeValue("gray.600", "gray.200");
   const bg = useColorModeValue("white", "gray.800");
   const { deleteProduct, updateProduct } = useProductStore();
 
-  const [updatedProduct, setUpdatedProduct] = useState(product);
+  const [updatedProduct, setUpdatedProduct] = useState<Omit<Product, "_id">>({
+    name,
+    price,
+    image,
+  });
 
   async function handleDeleteProduct(productId: string) {
     const { success, message } = await deleteProduct(productId);
@@ -48,7 +53,10 @@ export default function ProductCard({
     }
   }
 
-  async function handleUpdateProduct(productId, updatedProduct) {
+  async function handleUpdateProduct(
+    productId: string,
+    updatedProduct: Omit<Product, "_id">,
+  ) {
     const { success, message } = await updateProduct(productId, updatedProduct);
 
     if (success) {
@@ -75,19 +83,13 @@ export default function ProductCard({
       _hover={{ transform: "translateY(-5px)", shadow: "xl" }}
       backgroundColor={bg}
     >
-      <Image
-        src={product.image}
-        alt={product.name}
-        h={48}
-        w="full"
-        objectFit={"cover"}
-      />
+      <Image src={image} alt={name} h={48} w="full" objectFit={"cover"} />
       <Box p={4}>
         <Heading as={"h3"} size={"md"} mb={2}>
-          {product.name}
+          {name}
         </Heading>
         <Text fontWeight={"bold"} fontSize={"xl"} color={textColor} mb={4}>
-          $ {product.price}
+          $ {price}
         </Text>
         <HStack gap={2}>
           <Dialog.Root>
@@ -124,7 +126,7 @@ export default function ProductCard({
                         onChange={(e) => {
                           setUpdatedProduct({
                             ...updatedProduct,
-                            price: e.target.value,
+                            price: +e.target.value,
                           });
                         }}
                       />
@@ -145,16 +147,16 @@ export default function ProductCard({
                     <Dialog.ActionTrigger asChild>
                       <Button
                         variant="outline"
-                        onClick={() => setUpdatedProduct({ ...product })}
+                        onClick={() =>
+                          setUpdatedProduct({ name, price, image })
+                        }
                       >
                         Cancel
                       </Button>
                     </Dialog.ActionTrigger>
                     <Dialog.ActionTrigger asChild>
                       <Button
-                        onClick={() =>
-                          handleUpdateProduct(product._id, updatedProduct)
-                        }
+                        onClick={() => handleUpdateProduct(_id, updatedProduct)}
                       >
                         Update
                       </Button>
@@ -164,10 +166,7 @@ export default function ProductCard({
               </Dialog.Positioner>
             </Portal>
           </Dialog.Root>
-          <Button
-            colorPalette={"red"}
-            onClick={() => handleDeleteProduct(product._id)}
-          >
+          <Button colorPalette={"red"} onClick={() => handleDeleteProduct(_id)}>
             <RiDeleteBinLine />
           </Button>
         </HStack>

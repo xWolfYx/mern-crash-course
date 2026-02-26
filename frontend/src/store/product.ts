@@ -1,14 +1,32 @@
 import { create } from "zustand";
 
-export const useProductStore = create((set) => ({
+export interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  image: string;
+}
+
+interface ProductStore {
+  products: Product[];
+  setProducts: (products: Product[]) => void;
+  createProduct: (
+    newProduct: Omit<Product, "_id">,
+  ) => Promise<{ success: boolean; message: string }>;
+  fetchProducts: () => Promise<void>;
+  deleteProduct: (
+    productID: string,
+  ) => Promise<{ success: boolean; message: string }>;
+  updateProduct: (
+    productId: string,
+    updatedProduct: Omit<Product, "_id">,
+  ) => Promise<{ success: boolean; message: string }>;
+}
+
+export const useProductStore = create<ProductStore>((set) => ({
   products: [],
-  setProducts: (products: { name: string; price: number; image: string }[]) =>
-    set({ products }),
-  createProduct: async (newProduct: {
-    name: string;
-    price: number;
-    image: string;
-  }) => {
+  setProducts: (products) => set({ products }),
+  createProduct: async (newProduct) => {
     if (!newProduct.name || !newProduct.image || newProduct.price == null)
       return { success: false, message: "Please fill all of the fields" };
 
@@ -32,7 +50,7 @@ export const useProductStore = create((set) => ({
     set({ products: data.data });
   },
 
-  deleteProduct: async (productID: number) => {
+  deleteProduct: async (productID: string) => {
     const res = await fetch(`/api/products/${productID}`, { method: "DELETE" });
     const data = await res.json();
     if (!data.success) return { success: false, message: data.message };
@@ -44,7 +62,7 @@ export const useProductStore = create((set) => ({
   },
 
   updateProduct: async (
-    productID: number,
+    productID: string,
     updatedProduct: { name: string; price: number; image: string },
   ) => {
     const res = await fetch(`/api/products/${productID}`, {

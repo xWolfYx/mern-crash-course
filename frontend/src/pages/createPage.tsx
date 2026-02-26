@@ -11,10 +11,16 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 
+type NewProductForm = {
+  name: string;
+  price: number;
+  image: string;
+};
+
 export default function CreatePage() {
-  const [{ name, price, image }, setNewProduct] = useState({
+  const [{ name, price, image }, setNewProduct] = useState<NewProductForm>({
     name: "",
-    price: "",
+    price: 0,
     image: "",
   });
 
@@ -37,7 +43,7 @@ export default function CreatePage() {
         type: "success",
         closable: true,
       });
-      setNewProduct({ name: "", price: "", image: "" });
+      setNewProduct({ name: "", price: 0, image: "" });
     } else {
       toaster.create({
         description: message,
