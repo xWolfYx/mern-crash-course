@@ -21,11 +21,11 @@ app.use("/api/products", productRoutes);
 console.log(process.env.MONGO_URI);
 
 if (process.env.NODE_ENV === "production") {
-  const frontendPath = path.join(__dirname, "frontend", "dist");
+  const frontendPath = path.join(__dirname, "..", "frontend", "dist");
 
   app.use(express.static(frontendPath));
 
-  app.get("/{*path}", (req, res) => {
+  app.get("/{*splat}", (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
   });
 }
